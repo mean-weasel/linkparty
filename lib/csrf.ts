@@ -1,9 +1,6 @@
 import { NextRequest } from 'next/server'
 
-const ALLOWED_ORIGINS = [
-  'https://linkparty.app',
-  ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:3000', 'http://localhost:5173'] : []),
-]
+const ALLOWED_ORIGINS = ['https://linkparty.app', 'http://localhost:3000', 'http://localhost:5173']
 
 export function validateOrigin(request: NextRequest): boolean {
   const origin = request.headers.get('origin')
