@@ -127,8 +127,11 @@ export async function POST(request: NextRequest) {
     if (parsed.error) return parsed.error
     const body = parsed.body
 
-    // Check rate limit
-    const { limited, retryAfterMs } = rateLimiter.check(body.sessionId)
+    // Check rate limit (keyed on IP + sessionId to prevent spoofing while allowing
+    // multiple legitimate sessions from the same IP, e.g. same household)
+    const clientIp =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
+    const { limited, retryAfterMs } = rateLimiter.check(`${clientIp}:${body.sessionId}`)
     if (limited) {
       const retryAfterSec = Math.ceil(retryAfterMs / 1000)
       return NextResponse.json(
@@ -192,12 +195,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Compute next position server-side (ignore client-supplied position)
+    const { data: maxPosRow } = await supabase
+      .from('queue_items')
+      .select('position')
+      .eq('party_id', body.partyId)
+      .order('position', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const nextPosition = (maxPosRow?.position ?? -1) + 1
+
     // Insert the queue item
     const dbItem = {
       party_id: body.partyId,
       type: body.type,
       status: body.status,
-      position: body.position,
+      position: nextPosition,
       added_by_name: body.addedByName,
       added_by_session_id: body.sessionId,
       title: body.title ?? null,
