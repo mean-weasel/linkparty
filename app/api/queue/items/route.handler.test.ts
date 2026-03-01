@@ -54,7 +54,6 @@ function createMockSupabase(overrides?: {
 
   const supabase = {
     from: vi.fn(() => {
-      fromCallCount++
       return {
         select: vi.fn((selectArg: string) => {
           // Position query uses select('position')
