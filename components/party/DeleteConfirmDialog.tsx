@@ -30,7 +30,12 @@ export function DeleteConfirmDialog({ isOpen, onConfirm, onCancel }: DeleteConfi
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCancel()
+      }}
+    >
       <div
         ref={modalRef}
         role="alertdialog"

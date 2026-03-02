@@ -21,8 +21,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const body = await request.json()
-    const { sessionId, displayName, avatar, partyName, password, userId, visibleToFriends } = body
+    let body: Record<string, unknown>
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const { sessionId, displayName, avatar, partyName, password, userId, visibleToFriends } = body as {
+      sessionId?: string
+      displayName?: string
+      avatar?: string
+      partyName?: string
+      password?: string
+      userId?: string
+      visibleToFriends?: boolean
+    }
 
     // Validate required fields
     if (!sessionId || typeof sessionId !== 'string') {

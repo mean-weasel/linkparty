@@ -32,7 +32,12 @@ export function NoteEditModal({ isOpen, noteText, onNoteTextChange, onSave, onCa
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end justify-center z-50">
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end justify-center z-50"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCancel()
+      }}
+    >
       <div
         ref={modalRef}
         role="dialog"
@@ -54,7 +59,11 @@ export function NoteEditModal({ isOpen, noteText, onNoteTextChange, onSave, onCa
           </button>
         </div>
 
+        <label htmlFor="note-edit-content" className="sr-only">
+          Note content
+        </label>
         <textarea
+          id="note-edit-content"
           placeholder="Write your note..."
           value={noteText}
           onChange={(e) => onNoteTextChange(e.target.value)}

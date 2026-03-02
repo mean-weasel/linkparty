@@ -37,8 +37,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
-    const { code, sessionId, displayName, avatar, password, userId } = body
+    let body: Record<string, unknown>
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const { code, sessionId, displayName, avatar, password, userId } = body as {
+      code?: string
+      sessionId?: string
+      displayName?: string
+      avatar?: string
+      password?: string
+      userId?: string
+    }
 
     // Per-code throttle: prevent brute-force code guessing
     const upperCode = typeof code === 'string' ? code.toUpperCase() : ''

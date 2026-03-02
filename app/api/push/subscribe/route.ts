@@ -10,7 +10,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { sessionId, subscription } = await request.json()
+    let body: Record<string, unknown>
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const { sessionId, subscription } = body as { sessionId?: string; subscription?: { endpoint?: string } }
 
     if (!sessionId || !subscription?.endpoint) {
       return NextResponse.json({ error: 'Missing sessionId or subscription' }, { status: 400 })
@@ -80,7 +86,13 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { sessionId } = await request.json()
+    let deleteBody: Record<string, unknown>
+    try {
+      deleteBody = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const { sessionId } = deleteBody as { sessionId?: string }
 
     if (!sessionId) {
       return NextResponse.json({ error: 'Missing sessionId' }, { status: 400 })

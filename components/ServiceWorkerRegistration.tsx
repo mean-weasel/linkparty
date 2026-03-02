@@ -48,54 +48,15 @@ export function ServiceWorkerRegistration() {
   return (
     <div
       role="alert"
-      style={{
-        position: 'fixed',
-        bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
-        left: 16,
-        right: 16,
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 12,
-        padding: '12px 16px',
-        background: '#242838',
-        border: '1px solid #3a3f52',
-        borderRadius: 12,
-        color: '#f5f0e8',
-        fontSize: 14,
-        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
-      }}
+      className="fixed left-4 right-4 z-[9999] flex items-center justify-between gap-3 px-4 py-3 bg-surface-800 border border-surface-600 rounded-xl text-text-primary text-sm shadow-lg"
+      style={{ bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))' }}
     >
       <span>A new version is available.</span>
-      <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-        <button
-          onClick={() => setShowUpdate(false)}
-          style={{
-            background: 'transparent',
-            border: '1px solid #3a3f52',
-            borderRadius: 8,
-            color: '#948e84',
-            padding: '6px 12px',
-            fontSize: 13,
-            cursor: 'pointer',
-          }}
-        >
+      <div className="flex gap-2 shrink-0">
+        <button onClick={() => setShowUpdate(false)} className="btn btn-secondary text-xs px-3 py-1.5">
           Later
         </button>
-        <button
-          onClick={handleUpdate}
-          style={{
-            background: '#ff8a5c',
-            border: 'none',
-            borderRadius: 8,
-            color: '#1A1D2E',
-            padding: '6px 12px',
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
+        <button onClick={handleUpdate} className="btn btn-primary text-xs px-3 py-1.5 font-semibold">
           Update
         </button>
       </div>

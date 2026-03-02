@@ -58,3 +58,37 @@ Holistic beta-readiness audit across feature completeness, error handling, UX po
 - [ ] Health check endpoint should test Resend/push config (dimension: ops, severity: LOW)
 - [ ] NotificationDropdown missing Escape key handler (dimension: polish, severity: LOW)
 - [ ] ImageLightbox missing role="dialog" (dimension: polish, severity: LOW)
+
+---
+
+### Iteration 2 (2026-03-01)
+
+**Findings:** 35+ total across 5 dimensions (1 HIGH, 12 MEDIUM, 20+ LOW)
+**Code fixes applied:** 10
+**Manual to-dos added:** 2
+**Deferred:** 5
+
+#### Fixed (Code)
+
+- [x] PII in console logs — email addresses logged unmasked in webhook handler, now masked as `te***@domain.com` (dimension: ops, severity: HIGH)
+- [x] Click-outside-to-close missing on DeleteConfirmDialog — clicking backdrop now closes dialog (dimension: polish, severity: MEDIUM)
+- [x] Click-outside-to-close missing on InviteModal — clicking backdrop now closes modal (dimension: polish, severity: MEDIUM)
+- [x] Click-outside-to-close missing on NoteEditModal — clicking backdrop now closes modal (dimension: polish, severity: MEDIUM)
+- [x] InviteModal textarea missing `<label>` for screen readers — added sr-only label (dimension: polish, severity: MEDIUM)
+- [x] NoteEditModal textarea missing `<label>` for screen readers — added sr-only label (dimension: polish, severity: MEDIUM)
+- [x] ServiceWorkerRegistration uses hardcoded hex colors — replaced with Tailwind classes using design tokens (dimension: polish, severity: MEDIUM)
+- [x] 6 API routes return 500 for malformed JSON — now return 400 "Invalid JSON body" (parties/create, parties/join, push/subscribe, push/send, friends/request, users/block) (dimension: error-handling, severity: MEDIUM)
+- [x] push/send test expected 500 for bad JSON — updated to expect 400 (dimension: error-handling, severity: MEDIUM)
+
+#### Manual To-Dos Added
+
+- CRITICAL: Audit `.env.local` in git history and rotate all potentially exposed secrets (dimension: ops, severity: HIGH)
+- Ensure `.env.local` is in `.gitignore` and not tracked (dimension: ops, severity: HIGH)
+
+#### Deferred
+
+- [ ] Redundant getUser() calls in lib/friends.ts — 7 separate functions each call getUser() independently (dimension: performance, severity: LOW, acceptable since each is a separate API call)
+- [ ] History page could add cursor-based pagination for users with many parties (dimension: performance, severity: LOW)
+- [ ] AddContentModal textarea for notes missing label (dimension: polish, severity: LOW)
+- [ ] FriendsPicker search input missing form label (dimension: polish, severity: LOW)
+- [ ] PartyContext useMemo could include callback deps for completeness (dimension: performance, severity: LOW)
