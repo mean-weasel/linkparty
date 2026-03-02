@@ -54,6 +54,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // Verify admin access server-side
+  const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean)
+  if (!adminEmails.includes(user.email || '')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
   // S11: Scope results to the authenticated user's own invites

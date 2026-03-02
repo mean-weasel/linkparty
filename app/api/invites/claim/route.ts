@@ -75,57 +75,70 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, claimed: 0, friendshipsCreated: 0 })
     }
 
+    // Filter out self-invites and collect unique inviter IDs
+    const validTokens = tokens.filter((t) => t.inviter_id !== user.id)
+    const claimedTokenIds = tokens.map((t) => t.id)
+    const inviterIds = [...new Set(validTokens.map((t) => t.inviter_id))]
+
     let friendshipsCreated = 0
-    const claimedTokenIds: string[] = []
 
-    for (const token of tokens) {
-      // Skip if inviter is the user themselves
-      if (token.inviter_id === user.id) continue
-
-      // Check if friendship already exists (either direction)
-      const [{ data: existing1 }, { data: existing2 }] = await Promise.all([
-        supabase
-          .from('friendships')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('friend_id', token.inviter_id)
-          .maybeSingle(),
-        supabase
-          .from('friendships')
-          .select('id')
-          .eq('user_id', token.inviter_id)
-          .eq('friend_id', user.id)
-          .maybeSingle(),
+    if (inviterIds.length > 0) {
+      // Batch-fetch existing friendships in both directions (2 queries total instead of 2×N)
+      const [{ data: forwardFriendships }, { data: reverseFriendships }] = await Promise.all([
+        supabase.from('friendships').select('user_id, friend_id').eq('user_id', user.id).in('friend_id', inviterIds),
+        supabase.from('friendships').select('user_id, friend_id').in('user_id', inviterIds).eq('friend_id', user.id),
       ])
 
-      if (!existing1 || !existing2) {
-        // Create mutual friendship using upsert to prevent asymmetric state
-        const rows = []
-        if (!existing1) rows.push({ user_id: user.id, friend_id: token.inviter_id, status: 'accepted' })
-        if (!existing2) rows.push({ user_id: token.inviter_id, friend_id: user.id, status: 'accepted' })
+      const forwardSet = new Set((forwardFriendships ?? []).map((f) => f.friend_id))
+      const reverseSet = new Set((reverseFriendships ?? []).map((f) => f.user_id))
 
-        const { error: upsertError } = await supabase
-          .from('friendships')
-          .upsert(rows, { onConflict: 'user_id,friend_id', ignoreDuplicates: true })
+      // Build batch upsert rows and notification rows
+      const friendshipRows: { user_id: string; friend_id: string; status: string }[] = []
+      const notificationRows: {
+        user_id: string
+        type: string
+        title: string
+        body: string
+        data: Record<string, string>
+      }[] = []
 
-        if (!upsertError) {
+      for (const inviterId of inviterIds) {
+        const needsForward = !forwardSet.has(inviterId)
+        const needsReverse = !reverseSet.has(inviterId)
+
+        if (needsForward || needsReverse) {
+          if (needsForward) friendshipRows.push({ user_id: user.id, friend_id: inviterId, status: 'accepted' })
+          if (needsReverse) friendshipRows.push({ user_id: inviterId, friend_id: user.id, status: 'accepted' })
           friendshipsCreated++
 
-          // Create notification for the inviter (best-effort)
-          await supabase.from('notifications').insert({
-            user_id: token.inviter_id,
+          notificationRows.push({
+            user_id: inviterId,
             type: 'friend_accepted',
             title: 'New friend!',
             body: `${user.user_metadata?.display_name || user.email} joined via your invite and is now your friend`,
-            data: { friendId: user.id, friendName: user.user_metadata?.display_name || user.email },
+            data: { friendId: user.id, friendName: user.user_metadata?.display_name || user.email || '' },
           })
         }
       }
 
-      claimedTokenIds.push(token.id)
+      // Single batch upsert for all friendships
+      if (friendshipRows.length > 0) {
+        const { error: upsertError } = await supabase
+          .from('friendships')
+          .upsert(friendshipRows, { onConflict: 'user_id,friend_id', ignoreDuplicates: true })
+        if (upsertError) {
+          console.error('Failed to upsert friendships:', upsertError.message)
+          friendshipsCreated = 0
+        }
+      }
+
+      // Single batch insert for all notifications (best-effort)
+      if (notificationRows.length > 0) {
+        await supabase.from('notifications').insert(notificationRows)
+      }
     }
 
-    // Mark tokens as claimed
+    // Mark tokens as claimed (single query)
     if (claimedTokenIds.length > 0) {
       const { error: updateError } = await supabase
         .from('invite_tokens')

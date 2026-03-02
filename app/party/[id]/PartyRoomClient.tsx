@@ -19,7 +19,9 @@ import { ConflictToast } from '@/components/ui/ConflictToast'
 import { TwinklingStars } from '@/components/ui/TwinklingStars'
 import { PlusIcon, LoaderIcon } from '@/components/icons'
 import dynamic from 'next/dynamic'
-import { PartyHeader, MembersList, NowShowingSection, QueueList, PushPrompt } from '@/components/party'
+import { PartyHeader, MembersList, NowShowingSection, PushPrompt } from '@/components/party'
+
+const QueueList = dynamic(() => import('@/components/party/QueueList').then((mod) => mod.QueueList), { ssr: false })
 
 const AddContentModal = dynamic(() => import('@/components/party/AddContentModal'), { ssr: false })
 const InviteModal = dynamic(() => import('@/components/party/InviteModal'), { ssr: false })
@@ -329,6 +331,8 @@ export default function PartyRoomClient() {
         addedBy: currentUserDisplayName,
         isCompleted: false,
         ...queueItemData,
+        // Preserve original URL for youtube/tweet/reddit items
+        ...(detectedType !== 'note' && detectedType !== 'image' && contentUrl ? { sourceUrl: contentUrl } : {}),
       })
       setAddContentStep('success')
     } catch (err) {

@@ -21,7 +21,6 @@ import {
   listIncomingRequests,
   listOutgoingRequests,
   getFriendshipStatus,
-  searchUsers,
   sendFriendRequest,
   acceptFriendRequest,
   declineFriendRequest,
@@ -248,64 +247,6 @@ describe('friends', () => {
         }),
       })
       expect(await getFriendshipStatus('user-2')).toBe('pending_received')
-    })
-  })
-
-  describe('searchUsers', () => {
-    it('returns empty for short queries', async () => {
-      expect(await searchUsers('a')).toEqual([])
-    })
-
-    it('returns empty for queries that become too short after sanitization', async () => {
-      expect(await searchUsers('%%')).toEqual([])
-    })
-
-    it('sanitizes input and returns results excluding current user', async () => {
-      const profiles = [mockProfile('user-2', 'Alice'), mockProfile('user-1', 'Alicia')]
-
-      // Mock handles user_blocks queries (return empty) and user_profiles query
-      mockFrom.mockImplementation((table: string) => {
-        if (table === 'user_blocks') {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-            }),
-          }
-        }
-        // user_profiles
-        return {
-          select: vi.fn().mockReturnValue({
-            or: vi.fn().mockReturnValue({
-              limit: vi.fn().mockResolvedValue({ data: profiles, error: null }),
-            }),
-          }),
-        }
-      })
-
-      const result = await searchUsers('ali')
-      // Should exclude user-1 (the current user)
-      expect(result).toHaveLength(1)
-      expect(result[0].display_name).toBe('Alice')
-    })
-
-    it('returns empty array on error', async () => {
-      mockFrom.mockImplementation((table: string) => {
-        if (table === 'user_blocks') {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-            }),
-          }
-        }
-        return {
-          select: vi.fn().mockReturnValue({
-            or: vi.fn().mockReturnValue({
-              limit: vi.fn().mockResolvedValue({ data: null, error: { message: 'db error' } }),
-            }),
-          }),
-        }
-      })
-      expect(await searchUsers('test')).toEqual([])
     })
   })
 
@@ -642,45 +583,6 @@ describe('friends', () => {
       })
 
       expect(await isBlocked('user-2')).toBe(false)
-    })
-  })
-
-  describe('searchUsers (blocked user filtering)', () => {
-    it('filters out users who blocked me', async () => {
-      const profiles = [mockProfile('user-2', 'Alice'), mockProfile('user-5', 'BlockedMe')]
-
-      let callCount = 0
-      mockFrom.mockImplementation((table: string) => {
-        if (table === 'user_blocks') {
-          callCount++
-          if (callCount === 1) {
-            // blocker_id query (users I blocked)
-            return {
-              select: vi.fn().mockReturnValue({
-                eq: vi.fn().mockResolvedValue({ data: [], error: null }),
-              }),
-            }
-          }
-          // blocked_id query (users who blocked me)
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({ data: [{ blocker_id: 'user-5' }], error: null }),
-            }),
-          }
-        }
-        // user_profiles
-        return {
-          select: vi.fn().mockReturnValue({
-            or: vi.fn().mockReturnValue({
-              limit: vi.fn().mockResolvedValue({ data: profiles, error: null }),
-            }),
-          }),
-        }
-      })
-
-      const result = await searchUsers('ali')
-      expect(result).toHaveLength(1)
-      expect(result[0].display_name).toBe('Alice')
     })
   })
 

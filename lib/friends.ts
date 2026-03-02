@@ -179,48 +179,6 @@ export async function getFriendshipStatus(otherUserId: string): Promise<Friendsh
   return 'none'
 }
 
-export async function searchUsers(query: string): Promise<UserProfile[]> {
-  const trimmed = query.trim().toLowerCase()
-  if (trimmed.length < 2) return []
-
-  const escaped = trimmed.replace(/[^a-zA-Z0-9\s\-_]/g, '')
-  if (escaped.length < 2) return []
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  // Get blocked user IDs to filter from results
-  let blockedIds: string[] = []
-  if (user) {
-    const { data: blocks } = await supabase.from('user_blocks').select('blocked_id').eq('blocker_id', user.id)
-
-    if (blocks) {
-      blockedIds = blocks.map((b: { blocked_id: string }) => b.blocked_id)
-    }
-
-    // Also get users who blocked me (they shouldn't appear in my search)
-    const { data: blockedBy } = await supabase.from('user_blocks').select('blocker_id').eq('blocked_id', user.id)
-
-    if (blockedBy) {
-      blockedIds.push(...blockedBy.map((b: { blocker_id: string }) => b.blocker_id))
-    }
-  }
-
-  const { data, error } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .or(`username.ilike.%${escaped}%,display_name.ilike.%${escaped}%`)
-    .limit(20)
-
-  if (error || !data) return []
-
-  // Filter out current user and blocked users
-  const excludeIds = new Set([user?.id, ...blockedIds].filter(Boolean))
-  const profiles = (data as UserProfile[]).filter((p) => !excludeIds.has(p.id))
-  return profiles
-}
-
 // ---------- Mutation operations (via API routes with auth token) ----------
 
 async function getAuthHeaders(): Promise<Record<string, string> | null> {

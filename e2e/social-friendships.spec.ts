@@ -322,9 +322,8 @@ test.describe('Friends lib — Module Exports', () => {
     expect(typeof friends.listBlockedUsers).toBe('function')
   })
 
-  test('friends lib exports search and status functions', async () => {
+  test('friends lib exports status functions', async () => {
     const friends = await import('../lib/friends')
-    expect(typeof friends.searchUsers).toBe('function')
     expect(typeof friends.getFriendshipStatus).toBe('function')
     expect(typeof friends.sendFriendRequest).toBe('function')
     expect(typeof friends.isBlocked).toBe('function')
@@ -333,7 +332,7 @@ test.describe('Friends lib — Module Exports', () => {
   test('friends lib exports type definitions', async () => {
     // Verify the module can be imported without errors and has expected shape
     const friends = await import('../lib/friends')
-    expect(Object.keys(friends).length).toBeGreaterThanOrEqual(14)
+    expect(Object.keys(friends).length).toBeGreaterThanOrEqual(13)
   })
 })
 
@@ -598,16 +597,5 @@ test.describe.skip('Friend Request from Party Room (requires live Supabase)', ()
     // 4. FriendsPicker shows search input and friend list
     // 5. User A can select/deselect friends
     // 6. Selected friends get check icon
-  })
-})
-
-test.describe.skip('Search Users (requires live Supabase)', () => {
-  test('searchUsers returns matching profiles and excludes blocked users', async () => {
-    // OUTLINE:
-    // 1. User A searches for "testuser"
-    // 2. Results include matching display names and usernames
-    // 3. Results exclude User A themselves
-    // 4. Results exclude users blocked by User A
-    // 5. Results exclude users who have blocked User A
   })
 })
