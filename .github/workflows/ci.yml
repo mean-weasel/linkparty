@@ -140,6 +140,8 @@ jobs:
           version: latest
       - name: Start Supabase
         run: supabase start --exclude studio,mailpit,edge-runtime
+      - name: Seed test data
+        run: supabase db reset
       - name: Export Supabase env
         run: |
           supabase status -o env | grep -E "^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)=" | sed 's/"//g' >> "$GITHUB_ENV"
@@ -169,6 +171,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ env.SERVICE_ROLE_KEY }}
           E2E_MOCK_AUTH: 'true'
+          SUPABASE_LIVE: 'true'
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: always()

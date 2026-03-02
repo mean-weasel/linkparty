@@ -1,4 +1,13 @@
-import { test, expect, type Browser, type BrowserContext, type Page } from '@playwright/test'
+import { test, expect, type BrowserContext, type Page } from '@playwright/test'
+import {
+  shouldSkipLive,
+  createUserContext,
+  resetSession,
+  createPartyAsHost,
+  joinPartyAsGuest,
+  addNote,
+  addYouTubeLink,
+} from './fixtures'
 
 /**
  * Multi-User Realtime Sync Tests
@@ -15,65 +24,7 @@ import { test, expect, type Browser, type BrowserContext, type Page } from '@pla
  * Or against a real dev server: npm run dev (with Doppler credentials)
  */
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const isMockMode = !supabaseUrl || supabaseUrl.includes('placeholder')
-const shouldSkip = isMockMode || !process.env.SUPABASE_LIVE
-
-const FAKE_AUTH_COOKIE = { name: 'sb-mock-auth-token', value: 'test-session', domain: 'localhost', path: '/' }
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-async function createUserContext(browser: Browser): Promise<BrowserContext> {
-  const context = await browser.newContext()
-  await context.addCookies([FAKE_AUTH_COOKIE])
-  return context
-}
-
-async function resetSession(page: Page, displayName = 'Test User'): Promise<void> {
-  await page.goto('/')
-  await page.evaluate((name) => {
-    localStorage.clear()
-    localStorage.setItem('link-party-display-name', name)
-  }, displayName)
-  await page.reload()
-}
-
-async function createPartyAsHost(page: Page): Promise<string> {
-  await resetSession(page)
-  await page.getByRole('link', { name: 'Start a Party' }).first().click()
-  await page.getByRole('button', { name: 'Create Party' }).click()
-  await expect(page.getByTestId('party-code')).toBeVisible({ timeout: 10000 })
-  const codeText = (await page.getByTestId('party-code').textContent())?.trim() || ''
-  return codeText
-}
-
-async function joinPartyAsGuest(page: Page, _displayName: string, partyCode: string): Promise<void> {
-  await resetSession(page)
-  await page.getByRole('link', { name: 'Join with Code' }).click()
-  await page.getByPlaceholder('ABC123').fill(partyCode)
-  await page.getByRole('button', { name: 'Join Party' }).click()
-  await expect(page.getByTestId('party-code')).toBeVisible({ timeout: 10000 })
-}
-
-async function addNote(page: Page, text: string): Promise<void> {
-  await page.locator('.fab').click()
-  await page.getByRole('button', { name: 'Write a note' }).click()
-  await page.getByPlaceholder('Share a thought, reminder, or message...').fill(text)
-  await page.getByRole('button', { name: 'Preview' }).click()
-  await page.getByRole('button', { name: 'Add to Queue' }).click()
-  await page.waitForTimeout(1000)
-}
-
-async function addYouTubeLink(page: Page, url: string): Promise<void> {
-  await page.locator('.fab').click()
-  await page.getByPlaceholder('YouTube, Twitter/X, or Reddit URL...').fill(url)
-  await page.getByRole('button', { name: 'Continue' }).click()
-  await expect(page.getByRole('button', { name: 'Add to Queue' })).toBeVisible({ timeout: 10000 })
-  await page.getByRole('button', { name: 'Add to Queue' }).click()
-  await page.waitForTimeout(1000)
-}
+const shouldSkip = shouldSkipLive()
 
 // ---------------------------------------------------------------------------
 // WF1: Create and Join Party

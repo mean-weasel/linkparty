@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { FAKE_AUTH_COOKIE, isMockMode as checkMockMode, apiCreateParty, apiJoinParty, apiAddImage } from './fixtures'
 
 /**
  * Free-Tier Abuse Prevention Limits — E2E Tests
@@ -12,64 +13,10 @@ import { test, expect, type Page } from '@playwright/test'
  * REQUIRES a real Supabase instance (local or CI). Skipped in mock mode.
  */
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const isMockMode = !supabaseUrl || supabaseUrl.includes('placeholder')
-
-const FAKE_AUTH_COOKIE = { name: 'sb-mock-auth-token', value: 'test-session', domain: 'localhost', path: '/' }
+const isMockMode = checkMockMode()
 
 // Unique prefix per run to avoid collisions between parallel shards
 const runId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
-
-// ---------------------------------------------------------------------------
-// API helpers — call server routes directly to set up preconditions quickly
-// ---------------------------------------------------------------------------
-
-async function apiCreateParty(
-  baseURL: string,
-  sessionId: string,
-  displayName: string,
-  options: Record<string, unknown> = {},
-) {
-  const res = await fetch(`${baseURL}/api/parties/create/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', origin: 'http://localhost:3000' },
-    body: JSON.stringify({ sessionId, displayName, avatar: '🎉', ...options }),
-  })
-  return { status: res.status, body: await res.json() }
-}
-
-async function apiJoinParty(
-  baseURL: string,
-  code: string,
-  sessionId: string,
-  displayName: string,
-  options: Record<string, unknown> = {},
-) {
-  const res = await fetch(`${baseURL}/api/parties/join/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', origin: 'http://localhost:3000' },
-    body: JSON.stringify({ code, sessionId, displayName, avatar: '🎉', ...options }),
-  })
-  return { status: res.status, body: await res.json() }
-}
-
-async function apiAddImage(baseURL: string, partyId: string, sessionId: string, index: number) {
-  const res = await fetch(`${baseURL}/api/queue/items/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', origin: 'http://localhost:3000' },
-    body: JSON.stringify({
-      partyId,
-      sessionId,
-      type: 'image',
-      status: 'pending',
-      position: index,
-      addedByName: 'ImageBot',
-      imageUrl: `https://picsum.photos/id/${index}/400/300`,
-      imageName: `test-${index}.jpg`,
-    }),
-  })
-  return { status: res.status, body: await res.json() }
-}
 
 async function resetSession(page: Page): Promise<void> {
   await page.context().addCookies([FAKE_AUTH_COOKIE])
