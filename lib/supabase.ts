@@ -198,6 +198,8 @@ export interface DbQueueItem {
   image_url: string | null
   image_storage_path: string | null
   image_caption: string | null
+  // Source URL (original YouTube/Tweet/Reddit link)
+  source_url: string | null
   // Reminder/completion fields
   due_date: string | null
   is_completed: boolean

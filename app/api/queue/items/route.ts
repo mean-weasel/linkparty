@@ -49,6 +49,7 @@ interface QueueItemRequest {
   imageStoragePath?: string
   imageCaption?: string
   dueDate?: string
+  sourceUrl?: string
 }
 
 /**
@@ -99,6 +100,7 @@ function validateRequest(body: QueueItemRequest): string | null {
     imageName: 255,
     imageUrl: 2048,
     imageStoragePath: 500,
+    sourceUrl: 2048,
   }
 
   for (const [field, maxLen] of Object.entries(TEXT_LIMITS)) {
@@ -233,6 +235,7 @@ export async function POST(request: NextRequest) {
       image_storage_path: body.imageStoragePath ?? null,
       image_caption: body.imageCaption ?? null,
       due_date: body.dueDate ?? null,
+      source_url: body.sourceUrl ?? null,
       is_completed: false,
     }
 

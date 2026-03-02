@@ -47,6 +47,8 @@ export interface QueueItem {
   imageUrl?: string
   imageStoragePath?: string
   imageCaption?: string
+  // Source URL (YouTube/Tweet/Reddit original link)
+  sourceUrl?: string
   // Reminder/completion fields
   dueDate?: string
   isCompleted: boolean
@@ -100,6 +102,7 @@ function transformQueueItem(item: DbQueueItem): QueueItem {
     imageUrl: item.image_url ?? undefined,
     imageStoragePath: item.image_storage_path ?? undefined,
     imageCaption: item.image_caption ?? undefined,
+    sourceUrl: item.source_url ?? undefined,
     dueDate: item.due_date ?? undefined,
     isCompleted: item.is_completed ?? false,
     completedAt: item.completed_at ?? undefined,
@@ -604,6 +607,7 @@ export function useParty(partyId: string | null) {
           imageStoragePath: item.imageStoragePath,
           imageCaption: item.imageCaption,
           dueDate: item.dueDate,
+          sourceUrl: item.sourceUrl,
         }
 
         const apiResponse = await apiRequest('/api/queue/items', {

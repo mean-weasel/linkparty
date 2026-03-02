@@ -6,7 +6,7 @@ const mockFrom = vi.fn()
 
 // Terminal mocks
 const mockInviteTokensQueryLimit = vi.fn()
-const mockFriendshipCheckMaybeSingle = vi.fn()
+const mockFriendshipBatchQuery = vi.fn()
 const mockFriendshipUpsert = vi.fn()
 const mockNotificationInsert = vi.fn()
 const mockTokenUpdateIn = vi.fn()
@@ -18,9 +18,7 @@ vi.mock('@supabase/supabase-js', () => ({
       const table = args[0] as string
 
       if (table === 'invite_tokens') {
-        // Supports both select-chain and update-chain on the same object
         return {
-          // Select chain: .select(...).eq().eq().gt().limit(10)
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
               eq: vi.fn(() => ({
@@ -31,23 +29,24 @@ vi.mock('@supabase/supabase-js', () => ({
               })),
             })),
           })),
-          // Update chain: .update({...}).in('id', ids)
           update: vi.fn(() => ({
             in: mockTokenUpdateIn,
           })),
         }
       }
       if (table === 'friendships') {
+        // Supports batch select chains (eq→in and in→eq) and upsert
         return {
-          // Check chain: .select('id').eq().eq().maybeSingle()
           select: vi.fn(() => ({
+            // Forward: .eq('user_id', ...).in('friend_id', [...])
             eq: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                maybeSingle: mockFriendshipCheckMaybeSingle,
-              })),
+              in: mockFriendshipBatchQuery,
+            })),
+            // Reverse: .in('user_id', [...]).eq('friend_id', ...)
+            in: vi.fn(() => ({
+              eq: mockFriendshipBatchQuery,
             })),
           })),
-          // Upsert chain: .upsert(rows, options)
           upsert: mockFriendshipUpsert,
         }
       }
@@ -102,7 +101,8 @@ describe('Invites Claim API', () => {
       data: [{ id: 'tok-1', inviter_id: 'inviter-456', party_code: 'ABC123' }],
       error: null,
     })
-    mockFriendshipCheckMaybeSingle.mockResolvedValue({ data: null, error: null })
+    // Default: no existing friendships
+    mockFriendshipBatchQuery.mockResolvedValue({ data: [], error: null })
     mockFriendshipUpsert.mockResolvedValue({ error: null })
     mockNotificationInsert.mockResolvedValue({ error: null })
     mockTokenUpdateIn.mockResolvedValue({ error: null })
@@ -199,13 +199,20 @@ describe('Invites Claim API', () => {
       expect(response.status).toBe(200)
       const body = await response.json()
       expect(body.success).toBe(true)
-      // Self-invite token is still added to claimedTokenIds but no friendship created
+      // Self-invite token is still claimed but no friendship created
       expect(body.friendshipsCreated).toBe(0)
     })
 
     it('skips friendship creation when friendship already exists in both directions', async () => {
-      mockFriendshipCheckMaybeSingle.mockResolvedValueOnce({ data: { id: 'existing-1' }, error: null })
-      mockFriendshipCheckMaybeSingle.mockResolvedValueOnce({ data: { id: 'existing-2' }, error: null })
+      // Batch query returns existing friendships for both forward and reverse
+      mockFriendshipBatchQuery.mockResolvedValueOnce({
+        data: [{ user_id: 'user-123', friend_id: 'inviter-456' }],
+        error: null,
+      })
+      mockFriendshipBatchQuery.mockResolvedValueOnce({
+        data: [{ user_id: 'inviter-456', friend_id: 'user-123' }],
+        error: null,
+      })
       const { POST } = await import('./route')
       const response = await POST(createRequest())
       expect(response.status).toBe(200)

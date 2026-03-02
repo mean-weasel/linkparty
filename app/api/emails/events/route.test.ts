@@ -93,6 +93,7 @@ describe('Email Events API', () => {
       NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
       NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key',
       SUPABASE_SERVICE_ROLE_KEY: 'test-service-key',
+      NEXT_PUBLIC_ADMIN_EMAILS: 'test@example.com,other-admin@example.com',
     }
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-123', email: 'test@example.com' } }, error: null })
     mockInviteTokensResult.mockReturnValue({
@@ -140,6 +141,18 @@ describe('Email Events API', () => {
       expect(response.status).toBe(401)
       const body = await response.json()
       expect(body.error).toBe('Unauthorized')
+    })
+
+    it('returns 403 when user is not an admin', async () => {
+      mockGetUser.mockResolvedValueOnce({
+        data: { user: { id: 'user-456', email: 'nonadmin@example.com' } },
+        error: null,
+      })
+      const { GET } = await import('./route')
+      const response = await GET(createRequest())
+      expect(response.status).toBe(403)
+      const body = await response.json()
+      expect(body.error).toBe('Forbidden')
     })
   })
 
