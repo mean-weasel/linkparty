@@ -16,3 +16,8 @@ Items that require human action outside the codebase (service provider settings,
 - [ ] Configure CRON_SECRET with secure random value in Vercel, document 90-day rotation policy (dimension: ops, severity: MEDIUM)
 - [ ] Test Resend email delivery with real domain — verify SPF/DKIM/DMARC records (dimension: ops, severity: MEDIUM)
 - [ ] Verify Google OAuth callback URL https://linkparty.app/auth/callback is in Supabase Dashboard redirect allowlist (dimension: ops, severity: MEDIUM)
+
+### From Iteration 2 (2026-03-01)
+
+- [ ] CRITICAL: Audit `.env.local` in git history — if production secrets were ever committed, rotate all affected keys immediately (Supabase service role key, VAPID keys, Resend API key, CRON_SECRET) (dimension: ops, severity: HIGH)
+- [ ] Add `.env.local` to `.gitignore` if not already present, and verify it is not tracked (dimension: ops, severity: HIGH)

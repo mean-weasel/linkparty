@@ -16,7 +16,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { partyId, title, body, url, excludeSessionId } = await request.json()
+    let reqBody: Record<string, unknown>
+    try {
+      reqBody = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+    const { partyId, title, body, url, excludeSessionId } = reqBody as {
+      partyId?: string
+      title?: string
+      body?: string
+      url?: string
+      excludeSessionId?: string
+    }
 
     if (!partyId) {
       return NextResponse.json({ error: 'Missing partyId' }, { status: 400 })

@@ -146,7 +146,12 @@ export function InviteModal({ isOpen, partyId, partyCode, partyName, inviterName
     `flex-1 text-sm py-2 px-3 rounded-lg transition-colors ${active ? 'bg-surface-700 font-semibold' : 'text-text-muted'}`
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end justify-center z-50">
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end justify-center z-50"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose()
+      }}
+    >
       <div
         ref={modalRef}
         role="dialog"
@@ -193,7 +198,11 @@ export function InviteModal({ isOpen, partyId, partyCode, partyName, inviterName
                   className="input mb-3"
                   autoFocus
                 />
+                <label htmlFor="invite-personal-message" className="sr-only">
+                  Personal message (optional)
+                </label>
                 <textarea
+                  id="invite-personal-message"
                   placeholder="Add a personal message (optional)"
                   value={personalMessage}
                   onChange={(e) => setPersonalMessage(e.target.value)}

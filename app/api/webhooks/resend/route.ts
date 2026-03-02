@@ -98,6 +98,17 @@ function uint8ArrayToBase64(bytes: Uint8Array): string {
   return btoa(binary)
 }
 
+/** Mask email addresses for safe logging (e.g. "te***@example.com") */
+function maskEmails(emails: string[]): string {
+  return emails
+    .map((e) => {
+      const [local, domain] = e.split('@')
+      if (!domain) return '***'
+      return `${local.substring(0, 2)}***@${domain}`
+    })
+    .join(', ')
+}
+
 // Process webhook event
 async function processWebhookEvent(event: ResendWebhookPayload): Promise<void> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -110,7 +121,7 @@ async function processWebhookEvent(event: ResendWebhookPayload): Promise<void> {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-  console.log(`Processing ${event.type} event for ${event.data.to.join(', ')}`)
+  console.log(`Processing ${event.type} event for ${maskEmails(event.data.to)}`)
 
   switch (event.type) {
     case 'email.sent':
@@ -118,15 +129,15 @@ async function processWebhookEvent(event: ResendWebhookPayload): Promise<void> {
       break
 
     case 'email.delivered':
-      console.log(`Email delivered to ${event.data.to.join(', ')}`)
+      console.log(`Email delivered to ${maskEmails(event.data.to)}`)
       break
 
     case 'email.delivery_delayed':
-      console.log(`Email delivery delayed for ${event.data.to.join(', ')}`)
+      console.log(`Email delivery delayed for ${maskEmails(event.data.to)}`)
       break
 
     case 'email.bounced': {
-      console.error(`Email bounced for ${event.data.to.join(', ')}: ${event.data.bounce?.message}`)
+      console.error(`Email bounced for ${maskEmails(event.data.to)}: ${event.data.bounce?.message}`)
       const bouncedAddresses = event.data.to || []
       for (const addr of bouncedAddresses) {
         const { error: bounceErr } = await supabase.from('email_events').insert({
@@ -145,7 +156,7 @@ async function processWebhookEvent(event: ResendWebhookPayload): Promise<void> {
     }
 
     case 'email.complained': {
-      console.error(`Spam complaint from ${event.data.to.join(', ')}`)
+      console.error(`Spam complaint from ${maskEmails(event.data.to)}`)
       const complainedAddresses = event.data.to || []
       for (const addr of complainedAddresses) {
         const { error: complaintErr } = await supabase.from('email_events').insert({
@@ -164,7 +175,7 @@ async function processWebhookEvent(event: ResendWebhookPayload): Promise<void> {
     }
 
     case 'email.opened':
-      console.log(`Email opened by ${event.data.to.join(', ')}`)
+      console.log(`Email opened by ${maskEmails(event.data.to)}`)
       break
 
     case 'email.clicked':
