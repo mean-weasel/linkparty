@@ -16,7 +16,7 @@ const steps = [
   {
     icon: PlusIcon,
     title: 'Start a party',
-    description: 'Get a code. Share it. No signups.',
+    description: 'Get a code. Share it. Start watching.',
   },
   {
     icon: LinkIcon,
