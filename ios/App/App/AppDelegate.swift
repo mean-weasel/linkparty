@@ -1,4 +1,5 @@
 import UIKit
+import WebKit
 import Capacitor
 
 @UIApplicationMain
@@ -6,44 +7,92 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    private let storageKey = "com.linkparty.app.webStorage"
+
+    private var capacitorWebView: WKWebView? {
+        guard let vc = window?.rootViewController as? CAPBridgeViewController else { return nil }
+        return vc.webView
+    }
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
         return true
     }
 
-    func applicationWillResignActive(_ application: UIApplication) {
-        // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-        // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
-    }
-
     func applicationDidEnterBackground(_ application: UIApplication) {
-        // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-        // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        saveTokens()
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
-        // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
-    }
-
-    func applicationDidBecomeActive(_ application: UIApplication) {
-        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        restoreTokens()
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
-        // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+        saveTokens()
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        // Called when the app was launched with a url. Feel free to add additional processing here,
-        // but if you want the App API to support tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        // Called when the app was launched with an activity, including Universal Links.
-        // Feel free to add additional processing here, but if you want the App API to support
-        // tracking app url opens, make sure to keep this call
+        guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
+              let url = userActivity.webpageURL,
+              url.host == "linkparty.app" else {
+            return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
+        }
+
+        if let webView = capacitorWebView {
+            webView.load(URLRequest(url: url))
+            return true
+        }
+
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
+    // MARK: - Token Persistence
+
+    private func saveTokens() {
+        guard let webView = capacitorWebView else { return }
+
+        let js = """
+        (function() {
+            var tokens = {};
+            for (var i = 0; i < localStorage.length; i++) {
+                var key = localStorage.key(i);
+                if (key && key.startsWith('sb-')) {
+                    tokens[key] = localStorage.getItem(key);
+                }
+            }
+            return JSON.stringify(tokens);
+        })();
+        """
+
+        webView.evaluateJavaScript(js) { [weak self] result, error in
+            guard let self = self, error == nil, let json = result as? String else { return }
+            UserDefaults.standard.set(json, forKey: self.storageKey)
+        }
+    }
+
+    private func restoreTokens() {
+        guard let webView = capacitorWebView,
+              let json = UserDefaults.standard.string(forKey: storageKey),
+              !json.isEmpty else { return }
+
+        let escaped = json.replacingOccurrences(of: "\\", with: "\\\\")
+                         .replacingOccurrences(of: "'", with: "\\'")
+
+        let js = """
+        (function() {
+            try {
+                var tokens = JSON.parse('\(escaped)');
+                for (var key in tokens) {
+                    localStorage.setItem(key, tokens[key]);
+                    window.dispatchEvent(new StorageEvent('storage', { key: key, newValue: tokens[key] }));
+                }
+            } catch(e) {}
+        })();
+        """
+
+        webView.evaluateJavaScript(js, completionHandler: nil)
+    }
 }

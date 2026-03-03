@@ -1,21 +1,12 @@
 import type { NextConfig } from 'next'
 
-// Use static export only for Capacitor iOS builds (set STATIC_EXPORT=true)
-// Vercel deployments need server mode for API routes
-const useStaticExport = process.env.STATIC_EXPORT === 'true'
-
 // Allow localhost in CSP when using local Supabase (dev or CI with local Supabase)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const isLocalSupabase = supabaseUrl.includes('localhost') || supabaseUrl.includes('127.0.0.1')
 const isDev = process.env.NODE_ENV === 'development'
 
 const nextConfig: NextConfig = {
-  // Static export for Capacitor iOS builds only
-  ...(useStaticExport && { output: 'export' }),
-
-  // Disable image optimization only for static export (Capacitor builds)
   images: {
-    unoptimized: useStaticExport,
     remotePatterns: [
       { protocol: 'https', hostname: 'i.ytimg.com' },
       { protocol: 'https', hostname: 'pbs.twimg.com' },
@@ -26,7 +17,7 @@ const nextConfig: NextConfig = {
   // Trailing slashes help with static hosting
   trailingSlash: true,
 
-  // Security response headers (ignored during static export / Capacitor builds)
+  // Security response headers
   async headers() {
     return [
       {
@@ -36,6 +27,10 @@ const nextConfig: NextConfig = {
       {
         source: '/manifest.json',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=3600' }],
+      },
+      {
+        source: '/.well-known/apple-app-site-association',
+        headers: [{ key: 'Content-Type', value: 'application/json' }],
       },
       {
         source: '/(.*)',
@@ -68,8 +63,7 @@ const nextConfig: NextConfig = {
     ]
   },
 
-  // Note: Redirects don't work with static export
-  // Handle /?join=CODE -> /join/CODE client-side in the home page
+  // Note: Handle /?join=CODE -> /join/CODE client-side in the home page
 }
 
 export default nextConfig
