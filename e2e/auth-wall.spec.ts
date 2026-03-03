@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Auth Wall', () => {
-  test('unauthenticated user is redirected to login from home', async ({ page }) => {
+  test('unauthenticated user sees landing page at home', async ({ page }) => {
     await page.goto('/')
-    await expect(page).toHaveURL(/\/login/)
+    // Root is public — unauthenticated users see the landing page
+    await expect(page.getByRole('heading', { name: /stop losing links/i })).toBeVisible()
   })
 
   test('unauthenticated user is redirected to login from create', async ({ page }) => {

@@ -114,11 +114,11 @@ test.describe('Auth Flows — Sign Out', () => {
 
     // In mock mode the fake cookie persists, so middleware doesn't redirect.
     // But the AuthContext sets user/session to null. After a hard navigation
-    // (reload without cookie), the middleware would redirect to /login.
-    // Clear the fake cookie and verify subsequent navigation redirects to login.
+    // (reload without cookie), the home page shows the landing page instead.
+    // Clear the fake cookie and verify subsequent navigation shows landing page.
     await page.context().clearCookies()
     await page.goto('/')
-    await expect(page).toHaveURL(/\/login/, { timeout: 10000 })
+    await expect(page.getByRole('heading', { name: /stop losing links/i })).toBeVisible({ timeout: 10000 })
   })
 })
 
