@@ -1,17 +1,17 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
-const serverUrl = process.env.CAPACITOR_ENV === 'staging' ? 'https://staging.linkparty.app' : 'https://linkparty.app'
-
 const config: CapacitorConfig = {
   appId: 'com.linkparty.app',
   appName: 'Link Party',
-  webDir: 'out',
+  webDir: 'public',
   server: {
-    url: serverUrl,
-    androidScheme: 'https',
+    url: process.env.CAPACITOR_SERVER_URL || 'https://linkparty.app',
+    cleartext: false,
   },
   ios: {
     contentInset: 'automatic',
+    backgroundColor: '#6366f1',
+    appendUserAgent: 'LinkPartyCapacitor',
   },
 }
 
