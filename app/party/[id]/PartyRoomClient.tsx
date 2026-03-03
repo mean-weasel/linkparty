@@ -479,8 +479,8 @@ export default function PartyRoomClient() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Join ${partyInfo?.name || 'Party'}`,
-          text: `Join my Link Party with code ${partyCode}`,
+          title: `Join ${partyInfo?.name || 'my party'} on Link Party`,
+          text: `Join my Link Party — one shared queue so nothing gets missed. Code: ${partyCode}`,
           url: shareUrl,
         })
       } catch (err) {
