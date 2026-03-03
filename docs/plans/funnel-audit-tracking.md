@@ -7,7 +7,7 @@ Top-of-funnel marketing audit. 7 categories to cover.
 | #   | Category                       | Status      |
 | --- | ------------------------------ | ----------- |
 | 1   | CTAs & Conversion Points       | Completed   |
-| 2   | Referral & Viral Mechanics     | Not Started |
+| 2   | Referral & Viral Mechanics     | Completed   |
 | 3   | Email Capture & Lead Nurture   | Not Started |
 | 4   | Onboarding & Activation        | Not Started |
 | 5   | SEO & Content Discoverability  | Not Started |
@@ -39,6 +39,32 @@ Top-of-funnel marketing audit. 7 categories to cover.
 #### Categories Remaining
 
 - Referral & Viral Mechanics
+- Email Capture & Lead Nurture
+- Onboarding & Activation
+- SEO & Content Discoverability
+- Demo-to-Signup Funnel
+- Shareable & Exportable Content
+
+### Iteration 2 (2026-03-03)
+
+**Category:** Referral & Viral Mechanics
+**Findings:** 5 total (1 HIGH, 2 MEDIUM, 2 LOW)
+**Fixed:** 3
+**Deferred:** 2
+
+#### Fixed
+
+- [x] [HIGH] Join page URLs (`/join/[code]`) had no custom OG metadata — added `generateMetadata` with party-code-specific title, description, and OG/Twitter card metadata for rich link previews.
+- [x] [MEDIUM] Share text in Web Share API was bare ("Join my Link Party with code ABC123") — improved to include value pitch: "one shared queue so nothing gets missed."
+- [x] [MEDIUM] Landing page had no sharing/referral prompt — added "Tell a friend about Link Party" share button using Web Share API with clipboard fallback and analytics tracking.
+
+#### Deferred
+
+- [ ] [LOW] No social media share buttons (Twitter/X, etc.) on landing page — email invite + Web Share API cover primary use cases; social buttons add complexity for minimal gain at current scale.
+- [ ] [LOW] Auto-friendship on invite claim has no visible user messaging — works silently; a celebration toast would be nice-to-have but not critical.
+
+#### Categories Remaining
+
 - Email Capture & Lead Nurture
 - Onboarding & Activation
 - SEO & Content Discoverability

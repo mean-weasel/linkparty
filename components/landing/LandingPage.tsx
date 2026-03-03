@@ -29,6 +29,44 @@ const steps = [
   },
 ]
 
+function ShareLinkPartyButton() {
+  const handleShare = async () => {
+    const shareData = {
+      title: 'Link Party — Stop losing links in chat',
+      text: 'Great links get buried in group chats. Link Party gives your crew one shared queue — check it out!',
+      url: 'https://linkparty.app',
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+        track('share_link_party')
+      } catch {
+        /* user cancelled */
+      }
+    } else {
+      await navigator.clipboard.writeText(shareData.url)
+      track('share_link_party_copy')
+    }
+  }
+
+  return (
+    <button
+      onClick={handleShare}
+      className="btn btn-secondary text-sm px-6 py-2 flex items-center justify-center gap-2"
+    >
+      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <circle cx="18" cy="5" r="3" />
+        <circle cx="6" cy="12" r="3" />
+        <circle cx="18" cy="19" r="3" />
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+      </svg>
+      Tell a friend about Link Party
+    </button>
+  )
+}
+
 export function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-party relative overflow-x-hidden">
@@ -168,6 +206,12 @@ export function LandingPage() {
             </Link>
           </p>
         </div>
+      </section>
+
+      {/* Share */}
+      <section className="relative z-10 max-w-4xl mx-auto px-6 pb-16 sm:pb-24 text-center">
+        <p className="text-text-muted text-sm mb-3">Know someone who needs this?</p>
+        <ShareLinkPartyButton />
       </section>
 
       {/* Footer */}
