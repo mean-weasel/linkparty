@@ -134,10 +134,13 @@ function SignupForm() {
 
       <div className="flex-1 flex flex-col relative z-10">
         <h1 className="text-3xl font-bold mb-2 animate-fade-in-up">Create account</h1>
-        <p className="text-text-secondary mb-8 animate-fade-in-up delay-100">
+        <p className="text-text-secondary mb-2 animate-fade-in-up delay-100">
           {isInvite
             ? "You've been invited to a party! Sign up to join."
             : 'Join parties and share content with friends'}
+        </p>
+        <p className="text-text-muted text-sm mb-8 animate-fade-in-up delay-100">
+          Free forever. No credit card required.
         </p>
 
         {error && <div className="text-red-400 text-sm text-center mb-4">{error}</div>}

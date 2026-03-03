@@ -4,15 +4,15 @@ Top-of-funnel marketing audit. 7 categories to cover.
 
 ## Categories
 
-| #   | Category                       | Status      |
-| --- | ------------------------------ | ----------- |
-| 1   | CTAs & Conversion Points       | Completed   |
-| 2   | Referral & Viral Mechanics     | Completed   |
-| 3   | Email Capture & Lead Nurture   | Completed   |
-| 4   | Onboarding & Activation        | Completed   |
-| 5   | SEO & Content Discoverability  | Completed   |
-| 6   | Demo-to-Signup Funnel          | Not Started |
-| 7   | Shareable & Exportable Content | Not Started |
+| #   | Category                       | Status                     |
+| --- | ------------------------------ | -------------------------- |
+| 1   | CTAs & Conversion Points       | Completed                  |
+| 2   | Referral & Viral Mechanics     | Completed                  |
+| 3   | Email Capture & Lead Nurture   | Completed                  |
+| 4   | Onboarding & Activation        | Completed                  |
+| 5   | SEO & Content Discoverability  | Completed                  |
+| 6   | Demo-to-Signup Funnel          | Partial (1 HIGH remaining) |
+| 7   | Shareable & Exportable Content | Not Started                |
 
 ---
 
@@ -142,4 +142,26 @@ Top-of-funnel marketing audit. 7 categories to cover.
 #### Categories Remaining
 
 - Demo-to-Signup Funnel
+- Shareable & Exportable Content
+
+### Iteration 6 (2026-03-03)
+
+**Category:** Demo-to-Signup Funnel
+**Findings:** 5 total (1 HIGH, 2 MEDIUM, 2 LOW)
+**Fixed:** 2
+**Deferred:** 3
+
+#### Fixed
+
+- [x] [MEDIUM] Landing page "How it works" step said "No signups." which contradicts the auth requirement — updated to "Start watching." to align with actual experience.
+- [x] [MEDIUM] Signup page had no free-tier messaging — added "Free forever. No credit card required." below the subtitle.
+
+#### Deferred
+
+- [ ] [HIGH] No demo/trial mode — users must sign up before experiencing any core value (creating/joining parties, sharing links). Implementing guest mode requires middleware changes, RLS policies, mock party data, and realtime subscription changes (>100 lines, complex infrastructure).
+- [ ] [LOW] No interactive preview/screenshot gallery on landing page — adds visual complexity without clear ROI at current scale.
+- [ ] [LOW] No post-value signup nudges — requires demo mode to exist first.
+
+#### Categories Remaining
+
 - Shareable & Exportable Content
