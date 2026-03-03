@@ -303,11 +303,11 @@ test.describe('Authentication Flows', () => {
   })
 
   test.describe('Navigation between auth pages', () => {
-    test('unauthenticated user visiting home is redirected to login', async ({ page }) => {
+    test('unauthenticated user visiting home sees landing page', async ({ page }) => {
       await page.goto('/')
 
-      // Without auth cookie, user should be redirected to login
-      await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible()
+      // Root is public — unauthenticated users see the landing page
+      await expect(page.getByRole('heading', { name: /stop losing links/i })).toBeVisible()
     })
 
     test('can navigate login -> signup -> login', async ({ page }) => {
