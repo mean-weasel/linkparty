@@ -36,21 +36,18 @@ export default defineConfig({
   },
 
   /* Configure projects for major browsers
-   * - chromium: Desktop Chrome (covers Chromium engine + desktop viewport)
-   * - firefox: Desktop Firefox (covers Gecko engine)
+   * - chromium: Desktop Chrome (covers Blink engine + desktop viewport)
    * - Mobile Safari: iPhone 12 / WebKit (covers WebKit engine + mobile viewport)
    *
    * Dropped: 'webkit' desktop (same engine as Mobile Safari, redundant)
    *          'Mobile Chrome' (same engine as chromium, viewport coverage via Mobile Safari)
+   *          'firefox' (Gecko engine — zero browser-specific test skips, <3% mobile share,
+   *                     Blink + WebKit already cover the two dominant rendering engines)
    */
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
     },
     {
       name: 'Mobile Safari',
