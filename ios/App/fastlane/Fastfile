@@ -6,20 +6,17 @@ platform :ios do
     api_key = app_store_connect_api_key(
       key_id: ENV["ASC_KEY_ID"],
       issuer_id: ENV["ASC_ISSUER_ID"],
-      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_#{ENV['ASC_KEY_ID']}.p8")
+      key_filepath: ENV["ASC_KEY_FILEPATH"] || "~/.appstoreconnect/private_keys/AuthKey_#{ENV['ASC_KEY_ID']}.p8"
     )
-
-    current_build = latest_testflight_build_number(api_key: api_key)
-    new_build = current_build + 1
-    UI.message("Build number: #{current_build} → #{new_build}")
 
     build_app(
       project: "App.xcodeproj",
       scheme: "App",
-      xcargs: "-authenticationKeyID #{ENV['ASC_KEY_ID']} -authenticationKeyIssuerID #{ENV['ASC_ISSUER_ID']} -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_#{ENV['ASC_KEY_ID']}.p8 -allowProvisioningUpdates CURRENT_PROJECT_VERSION=#{new_build}",
+      xcargs: "-allowProvisioningUpdates",
       export_options: {
-        signingStyle: "automatic",
-        method: "app-store-connect"
+        method: "app-store",
+        teamID: ENV["APPLE_TEAM_ID"],
+        signingStyle: "automatic"
       }
     )
 
