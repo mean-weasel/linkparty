@@ -1,16 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { getConsentStatus, setConsentStatus } from '@/lib/cookieConsent'
 
-export function CookieConsentBanner() {
-  const [visible, setVisible] = useState(false)
+function getInitialVisible(): boolean {
+  try {
+    return getConsentStatus() === null
+  } catch {
+    return false
+  }
+}
 
-  useEffect(() => {
-    if (getConsentStatus() === null) {
-      setVisible(true)
-    }
-  }, [])
+export function CookieConsentBanner() {
+  const [visible, setVisible] = useState(getInitialVisible)
 
   if (!visible) return null
 
