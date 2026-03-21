@@ -10,8 +10,8 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* Retry once on CI (down from 2 — reduces total time when WebKit is slow) */
+  retries: process.env.CI ? 1 : 0,
   /* Use half available CPUs on CI (sharding handles the rest) */
   workers: process.env.CI ? '75%' : undefined,
   /* Increase test timeout on CI — WebKit on Linux needs more headroom */
@@ -53,8 +53,8 @@ export default defineConfig({
       name: 'Mobile Safari',
       use: {
         ...devices['iPhone 12'],
-        /* WebKit on Linux CI cold-starts slowly — give navigation extra headroom */
-        ...(process.env.CI ? { navigationTimeout: 45_000, actionTimeout: 15_000 } : {}),
+        /* WebKit on Linux CI is slow — generous timeouts to avoid false failures */
+        ...(process.env.CI ? { navigationTimeout: 60_000, actionTimeout: 30_000 } : {}),
       },
     },
   ],
