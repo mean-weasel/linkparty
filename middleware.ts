@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/login', '/signup', '/reset-password', '/auth/callback']
+const PUBLIC_ROUTES = ['/login', '/signup', '/reset-password', '/auth/callback', '/join', '/terms', '/privacy']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -38,7 +38,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Allow fake auth cookie used by E2E tests — only when E2E_MOCK_AUTH is explicitly set.
-  // Safe: this env var is only set in CI's E2E job, never in Vercel production.
+  // Safe: this env var is only set in CI's E2E job, never in Vercel deployments.
+  // Note: E2E runs `next start` (NODE_ENV=production), so we cannot gate on NODE_ENV here.
   if (process.env.E2E_MOCK_AUTH) {
     const hasFakeAuth = request.cookies.getAll().some((cookie) => cookie.name.includes('mock-auth-token'))
     if (hasFakeAuth) return NextResponse.next()

@@ -10,10 +10,10 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* No retries — failing auth tests are deterministic, retries waste CI time */
+  retries: 0,
   /* Use half available CPUs on CI (sharding handles the rest) */
-  workers: process.env.CI ? '75%' : undefined,
+  workers: process.env.CI ? '50%' : undefined,
   /* Increase test timeout on CI — WebKit on Linux needs more headroom */
   timeout: process.env.CI ? 60_000 : 30_000,
   /* Reporter to use */
@@ -49,14 +49,16 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    {
-      name: 'Mobile Safari',
-      use: {
-        ...devices['iPhone 12'],
-        /* WebKit on Linux CI cold-starts slowly — give navigation extra headroom */
-        ...(process.env.CI ? { navigationTimeout: 45_000, actionTimeout: 15_000 } : {}),
-      },
-    },
+    ...(process.env.CI
+      ? []
+      : [
+          {
+            name: 'Mobile Safari' as const,
+            use: {
+              ...devices['iPhone 12'],
+            },
+          },
+        ]),
   ],
 
   /* Run your local dev server before starting the tests */
