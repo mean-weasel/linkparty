@@ -10,14 +10,12 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code */
   forbidOnly: !!process.env.CI,
-  /* No retries on CI — cold-start flakes burn too much time with retries */
-  retries: 0,
-  /* Use half available CPUs on CI */
+  /* Retry on CI only */
+  retries: process.env.CI ? 2 : 0,
+  /* Use half available CPUs on CI (sharding handles the rest) */
   workers: process.env.CI ? '50%' : undefined,
   /* Increase test timeout on CI — WebKit on Linux needs more headroom */
   timeout: process.env.CI ? 60_000 : 30_000,
-  /* Warm up Next.js server before tests (avoids cold-start timeouts) */
-  globalSetup: process.env.CI ? './e2e/global-setup.ts' : undefined,
   /* Reporter to use */
   reporter: [['html', { open: 'never' }], ['list']],
   /* Shared settings for all the projects below */
