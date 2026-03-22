@@ -10,8 +10,8 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* Retry once on CI — enough to catch flakes without exhausting timeout */
+  retries: process.env.CI ? 1 : 0,
   /* Use half available CPUs on CI (sharding handles the rest) */
   workers: process.env.CI ? '50%' : undefined,
   /* Increase test timeout on CI — WebKit on Linux needs more headroom */
